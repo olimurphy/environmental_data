@@ -1,0 +1,95 @@
+---
+title: "Lab 2 Report"
+subtitle: "ECo 634"
+author: "Ollie Murphy"
+date: "9/15/2021"
+output:
+  html_document:
+    theme: lumen
+---
+#### Intermediate Logical Subsetting I
+
+1. Show the R code you used to create vec_2
+```{r setup, include=TRUE}
+n = 12345
+vec_1 = sample(12, n, replace = TRUE)
+vec_2 = c(vec_1 == 3)
+```
+
+2. Give two reasons why determining which elements in vec_1 have value 3 by visual inspection is a bad idea?
+
+   - First, there are a lot of arguments which makes a visual inspection incredibly inefficient. Second, R has a max print value, meaning that you cannot see all of the vector values.
+
+#### Intermediate Logical Subsetting II
+
+```{r}
+n = 12345
+vec_1 = sample(12, n, replace = TRUE)
+head(vec_1)
+length(vec_1)
+sum(vec_1 == 3)
+```
+```{r}
+n = 10
+vec_1 = sample(12, n, replace = TRUE)
+paste0("Sum of elements with value 3: ", sum(vec_1 == 3))
+```
+3. Why didn’t you always get the same count of 3 entries each time?
+   - Each time the function is run, it creates a vector with 10 elements, each of which is a random number between 1 and 12. Becuase replace = TRUE, elements can repeat meaning that there could, theoretically, be anywhere between 0 and 10 "3"s in the vector.
+
+4. Considering the different vectors generated each time, explain why using a logical test is a safe way to select entries with a value of 3.
+   - Using a logical test is a safe way to select "3"s because it re-runs every time the vector is refreshed, and eliminates the risk of just missing a "3" with visual inspection. Also, it doesn't require printing vec_1.
+
+5. Explain why performing logical subsetting is very very bad practice. You may want consider re-usability of code, working with different sized data sets, and sharing code with collaborators.
+   - One reason logical subsetting is bad is that all of the elements/vectors/matrices in the subsetting function have to be the same, meaning that reusing the code requires a lot of changes to that code. Additionally, when sharing the code your collaborators would have to have the same variables/vectors/matrices as you. Finally, with very large data sets, the subset that you generate may also be very large and difficult to navigate manually/visually. 
+
+#### Basic Loops
+
+6. Provide the code for your modified loop. It must run as a self-contained example on a fresh R session on my computer.
+```{r}
+for (i in 1:10)
+{
+  print(paste0("This is loop iteration: ", i))
+}
+```
+
+#### Intermediate Loops
+
+7. Provide the code for the modified loop that executes n times. It needs to be a self contained example. I should be able to set the value of n and then run your loop on my computer.
+```{r include=TRUE}
+n = sample(100, 1)
+for (i in 1:n)
+{
+  print(i)
+}
+```
+
+#### Intermediate Loops II
+
+8. Provide the code you used to create the n, vec_1, and the loop. As always, it should run as a stand-alone example in a fresh R session on my computer.
+```{r}
+n = 17
+vec_1 = c(sample(10, n, replace = TRUE))
+for (i in 1:n)
+{
+  print(
+    paste('The element of vec_1 at index', i, 'is', vec_1[i]))
+  }
+```
+
+#### Functions
+
+9. Provide the code you used to build your function. 
+
+```{r}
+create_and_print_vec = function(n, min = 1, max = 10)
+{n = sample(min:max, 1)
+  vec_1 = c(sample(min:max, n, replace = TRUE))
+for (i in 1:n)
+{
+  print(
+    paste('The element of vec_1 at index', i, 'is', vec_1[i]))
+}}
+create_and_print_vec(n)
+```
+

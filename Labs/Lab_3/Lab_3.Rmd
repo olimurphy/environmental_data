@@ -1,0 +1,101 @@
+---
+title: "Lab 3"
+author: "Ollie Murphy"
+date: "9/22/2021"
+output: html_document
+---
+
+### Lab Prep
+```{r include=TRUE}
+#install.packages("psych")
+require(psych)
+#install.packages("here")
+require(here)
+
+# Read Datasets, assign variables,and merge
+dat_bird = read.csv(here("data", "bird.sta.csv"))
+dat_habitat = read.csv(here("data", "hab.sta.csv"))
+dat_all = merge(dat_bird, dat_habitat)
+
+# Input custom curve functions
+get_logistic_param_a = function(slope, midpoint)
+{
+  b = slope / 4
+  return (-midpoint * (slope / 4))
+}
+
+# Function to calculate the logistic parameter b given the slope
+get_logistic_param_b = function(slope)
+{
+  return (slope / 4)
+}
+
+
+# Calculate the value of the logistic function at x, given the parameters a and b.
+logistic = function(x, a, b)
+{
+  val = exp(a + b * x)
+  return(val / (1 + val))
+}
+
+# Calculate the value of the logistic function at x, given a slope and midpoint.
+logistic_midpoint_slope = function(x, midpoint, slope)
+{
+  b = get_logistic_param_b(slope)
+  a = get_logistic_param_a(slope, midpoint)
+  return(logistic(x, a, b))
+}
+
+```
+
+### Lab Questions
+
+##### 1. What is basal area, and how is it measured?
+- Basal area measures area of tree cover, alive or dead, in meters squared per hectare
+
+##### 2. Include a figure of your terrain/basal area pairplots.
+```{r}
+dat_terrain = dat_all[c("elev", "aspect", "slope", "ba.tot")]
+pairs.panels(dat_terrain)
+```
+
+#### Bird Species 1
+
+##### 3. Include an figure of your logistic function plot.
+```{r}
+bcch_pres_abs = as.numeric(dat_all$BCCH >= 1)
+plot(x = dat_all$ba.tot, y = bcch_pres_abs, main = "Black Capped Chickadee Presence/Absence", xlab = "Total Basal Area (m2 per ha)", ylab = "Chickadee Presence")
+curve(logistic_midpoint_slope(x, midpoint = 30, slope = -1), add = TRUE, col = "blue")
+```
+
+##### 4. Qualitatively describe the bird’s presence/absence patterns in terms of basal area.
+- In general, the Black Capped Chickadee (one of my favorite birds!!) seems to prefer areas with low tree cover, as evidenced by the curve fit to the presence/absence plot. The curve has a steep negative slope, and its midpoint sits around 30 m2 per ha, meaning that most of the chickadees are found at or below 30 m2 per ha of tree cover. This logistic model seems like a fairly good fit, in my opinion. However, its accuracy is definitely limited by the limited number of chickadee sightings.
+
+#### Bird Species 2
+
+##### 5. Include an figure of your logistic function plot.
+```{r}
+wiwr_pres_abs = as.numeric(dat_all$WIWR >= 1)
+plot(x = dat_all$ba.tot, y = wiwr_pres_abs, main = "Winter Wren Presence/Absence", xlab = "Total Basal Area (m2 per ha)", ylab = "Wren Presence")
+curve(logistic_midpoint_slope(x, midpoint = 40, slope = .45), add = TRUE, col = "blue")
+```
+
+##### 6. Qualitatively describe the bird’s presence/absence patterns in terms of basal area.
+- In general, the Winter Wren seems to be found most often in areas with less that 100 m2 per ha of tree cover. However, it is also most likely NOT to be found at areas below 50 m2 per ha of tree cover. Because the absence points are clustered at the low-area end of the x axis, I started my curve there even though most of the presence points are also clustered at that part of the axis. I tried to account for that overlap by making the slope much shallower (and positive rather than negative) than the chickadee curve. The slope is positive becuase, though they are less dense, there are many more presence points than absence above 50 m2 per ha of tree cover. 
+
+#### Gray Jays
+
+##### 7. How many total number of Gray Jays were observed in all of the sampling sites? 
+##### 8. Include the R code you used to perform the calculation.
+```{r}
+sum(dat_all["GRJA"])
+```
+
+
+##### 9. Calculate the total number of sampling sites in which Grey Jays were observed.
+##### 10. Include the R code you used to perform the presence/absence calculation
+```{r}
+sum(as.numeric(dat_all$GRJA >= 1))
+```
+
+

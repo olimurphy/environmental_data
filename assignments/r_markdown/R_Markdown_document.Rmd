@@ -1,0 +1,28 @@
+---
+title: "R Markdown Documents - Part 1"
+subtitle: "Analysis of Environmental Data"
+author: "Ollie Murphy"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: lumen
+---
+# Introduction
+Hi! My name is **Olivia (or Ollie) Murphy**.
+I am a one-year *MS Geography-- Geographic Information Science and Technology* (*GIST*) student.
+
+# Concepts List
+A few concepts I'm looking forward to learning in this course are...
+
+1. Basic R
+2. Model Building
+3. Types of Models
+
+# Course List
+Some of my favorite past courses (including undergrad) are...
+
+- Intro to GIS
+- Feminist Approaches to Critical University Studies
+- Queer Theory
+

@@ -1,0 +1,10 @@
+#Prepare Dataset
+class(penguins)
+penguins = data.frame(penguins)
+mean(penguins$body_mass_g)
+mean(penguins$body_mass_g, na.rm = TRUE)
+summary(penguins)
+pairs(penguins)
+plot(penguins$bill_length_mm, penguins$bill_depth_mm)
+hist(penguins$body_mass_g)
+boxplot()

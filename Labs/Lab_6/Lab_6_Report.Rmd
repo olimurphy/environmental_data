@@ -1,0 +1,138 @@
+---
+title: "Lab 6 Report"
+author: "Ollie Murphy"
+date: "10/13/2021"
+output: html_document
+---
+
+##### 1. Show the R code you used to define your sse_mean() function
+
+```{r}
+require("palmerpenguins")
+rm(list = ls())
+
+sse_mean = function(x)
+{
+  sd(x, na.rm = TRUE) / sqrt(length(x) - sum(is.na(x)))
+}
+
+sse_mean(penguins$body_mass_g)
+sse_mean(mtcars$mpg)
+```
+
+##### 2. Include the code you used to define your two_group_resample() function into the text input.
+
+```{r}
+set.seed(4587845)
+two_group_resample = function(x, n_1, n_2)
+{
+  mean(
+    sample(x, n_1, replace = TRUE), na.rm = TRUE) - mean(
+      sample(x, n_2, replace = TRUE), na.rm = TRUE)
+}
+```
+
+##### 3. Does your function perform Monte Carlo or bootstrap resampling, i.e. does it simulate a null or an alternative hypothesis? 
+
+- Monte Carlo/null hypothesis
+
+##### 4. Create histogram of the resampled differences of means.
+
+```{r}
+n = 2000
+dat_pen = droplevels(subset(penguins, species != "Gentoo"))
+mean_differences = c()
+for (i in 1:n)
+{
+  mean_differences = c(
+    mean_differences,
+    two_group_resample(dat_pen$flipper_length_mm, 68, 152)
+  )
+}
+hist(mean_differences, main = "Histogram of Mean Differences\nAdelie and Chinstrap Flipper Length", xlab = "Mean Difference")
+```
+
+##### 5. How many of your resampled differences of means were greater than 5.8? 
+- There are 0 differences of mean that are greater than 5.8
+
+```{r}
+agg_means = aggregate(
+  flipper_length_mm ~ species,
+  data = dat_pen,
+  FUN = mean,
+  na.rm = TRUE)
+
+diff_observed = diff(agg_means[,2])
+
+sum(abs(mean_differences) >= diff_observed)
+```
+
+##### 6. Given a p value of less than 1 per 10 million, how many simulations do you think you would have to do to see a difference in mean flipper length equal to or greater than 5.8 mm?
+
+- You would likely have to do at least 10 million simulations to see a difference in mean flipper length greater than or equal to 5.8 mm.
+
+### Resampling a Different Variable
+
+##### 7. Include a boxplot of your chosen variable in your report.
+
+```{r}
+boxplot(dat_pen$body_mass_g ~ dat_pen$species, main = "Penguin Body Weight in Grams", xlab = "Species", ylab = "Body Mass (g)")
+```
+
+##### 8. Report the group means and difference between the means.
+
+- Group Means
+
+```{r}
+agg_pen_means = aggregate(
+  body_mass_g ~ species,
+  data = dat_pen,
+  FUN = mean,
+  na.rm = TRUE)
+
+agg_pen_means
+
+```
+
+- Difference of Means
+
+```{r}
+diff_crit = diff(agg_pen_means[,2])
+
+diff_crit
+```
+
+##### 9. Interpret the p-value from the t-test output in plain, non-technical English that a non-statistician would understand.
+
+```{r}
+t.test(dat_pen$body_mass_g ~ dat_pen$species)
+```
+
+- In this t-test, the p-value of .5879 means that if you repeatedly sampled the Adelie vs. Chinstrap body mass data, roughly 59% of the time the difference of body mass would be greater than or equal to ~32 grams.
+
+### Resampling test with 1000 repetitions
+
+##### 10. How many differences in means were greater than diff_crit? 
+
+
+```{r}
+
+n = 1000
+mean_differences_mass = c()
+for (i in 1:n)
+{
+  mean_differences_mass = c(
+    mean_differences_mass,
+    two_group_resample(dat_pen$body_mass_g, 68, 152)
+  )
+}
+
+sum(abs(mean_differences_mass) >= diff_crit)
+```
+
+##### 11. Include a histogram of your simulation results in your report.
+
+```{r}
+hist(mean_differences_mass, main = "1000 Trial Simulated Mean Difference\nPenguin Body Mass", xlab = "Mean Difference")
+```
+

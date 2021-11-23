@@ -1,0 +1,84 @@
+---
+title: "Data Exploration and Deterministic Functions"
+author: "Ollie Murphy"
+date: "9/22/2021"
+output: html_document
+---
+Setup
+```{r}
+#install.packages("here")
+require(here)
+dat_habitat = read.csv(here("data", "hab.sta.csv"))
+```
+
+### Report Questions
+
+##### 1. Create and plot histograms for the three terrain variables: elevation, slope, and aspect
+```{r}
+#Display histograms in a row
+par(mfrow = c(1, 3))
+#Elevation histogram
+hist(dat_habitat$elev, main = "Habitat Elevation", xlab = "Elevation (m)")
+#Aspect histogram
+hist(dat_habitat$aspect, breaks = c(0, 90, 180, 270, 360), main = "Habitat Aspect", xlab = "Aspect (degrees)")
+#Slope histogram
+hist(dat_habitat$slope, main = "Habitat Slope", xlab = "Percent Slope (%)")
+```
+
+##### 2. Consider the distribution of elevations at the bird census sample sites, and interpret the shape of the elevation histogram in non-technical language that a non-scientist audience would understand.
+
+- The habitat elevations in this dataset range from near 0 meters to over 800 meters, with very few data points at the extremes of the range. The greatest proportion of sampling sites are at elevations between roughly 200 and 500 meters. In general, it seems that sampling sites were more likely to be at low elevations, with the most samples in the 350 - 400 m bin. The number of sampling sites sharply declines beyond 650 m.
+
+##### 3. What are the units of slope in this data set?
+
+- percent slope
+
+##### 4. Consider the distribution of slopes at the bird census sample sites, and interpret the shape of the slope histogram in non-technical language that a non-scientist audience would understand.
+
+- The site slopes present in this data set are measured in percent slope, and the data points range from roughly 0% (flat) to 110% (48 degrees). There are very few sample sites with a percent slope above 90%. The vast majority of sites have a slope percent between 30 and 80%, with the largest number falling into the 40 - 50% bin. There are fewer than 50 flat areas in the data set, and shallow slopes are respresented more strongly than steep slopes.
+
+##### 5. Briefly define aspect, describing the units used in this dataset.
+
+- Aspect refers to the direction of the slope of a particular area. In this data set it is measured in degrees where north is 0 degrees, east is 90 degrees, south is 180 degrees, and west is 270 degrees.
+
+##### 6. Interpret the shape of the aspect histogram in non-technical language that a non-scientist audience would understand.
+
+- The similar heights of the bars in the aspect histogram indicate that the sample sites are pretty much evenly distributed by aspect. There are slightly more sites that face between north and east that the other directions, and slightly less between east and south, but it is a negligible difference.
+
+##### 7. Create scatterplots of total basal area and each of the the terrain variables (elevation, slope, and aspect), and visually inspect the plots and fit a linear function to each terrain variable.
+
+```{r}
+#define function
+line_point_slope = function(x, x1, y1, slope)
+{
+  get_y_intercept = 
+    function(x1, y1, slope) 
+      return(-(x1 * slope) + y1)
+  
+  linear = 
+    function(x, yint, slope) 
+      return(yint + x * slope)
+  
+  return(linear(x, get_y_intercept(x1, y1, slope), slope))
+}
+#Display plots in a row
+par(mfrow = c(1, 3))
+#Plot elevation
+plot(dat_habitat$elev, dat_habitat$ba.tot, cex = .5,  main = "Basal Area and Elevation", xlab = "Elevation (m)", ylab = "Total Basal Area")
+#Fit line
+curve(line_point_slope(x, x1 = mean(dat_habitat$elev), y1 = mean(dat_habitat$ba.tot), slope = 0.02), col = "red", add = TRUE)
+#Plot Aspect
+plot(dat_habitat$aspect, dat_habitat$ba.tot, cex = .5, main = "Basal Area and Aspect", xlab = "Aspect (degrees)", ylab = "Total Basal Area")
+#Fit line
+curve(line_point_slope(x, x1 = mean(dat_habitat$aspect), y1 = mean(dat_habitat$ba.tot), slope = 0.0), col = "red", add = TRUE)
+#Plot slope
+plot(dat_habitat$slope, dat_habitat$ba.tot, cex = .5, main = "Basal Area and Slope", xlab = "Slope (%)", ylab = "Total Basal Area")
+#Fit line
+curve(line_point_slope(x, x1 = mean(dat_habitat$slope), y1 = mean(dat_habitat$ba.tot), slope = 0.03), col = "red", add = TRUE)
+```
+
+##### 8. For each terrain variable (elevation, slope, aspect), describe the relationship you observe and your model fit.
+
+- Elevation: There seems to be a slight association between the total basal area and elevation of each sample site. However, I do not believe that it is linear or, indeed, monotonic. I believe that my linear model is an ok fit--it reflects that there are fewer low-basal-area points at higher elevations, but this may also be a result of fewer total sample sites at those higher elevations.
+- Aspect: There is no noticeable association between the total basal area and the aspect. I can fit a linear model with a slope of 0, which fits the data well, but also indicates a lack of correllation/association among the data.
+- Slope: Again, there is a VERY slight association between the total basal area and slope of each data site. However, it does not seem to be linear--for the most part there seems to be a consistant amount of low-basal-area points across slopes up to 80 %, but the number of high-basal-area points increases slightly through the middle of the plot. I find that my linear model is, again, a kind-of-okay fit, though a non-monotonic curved model would likely fit better.

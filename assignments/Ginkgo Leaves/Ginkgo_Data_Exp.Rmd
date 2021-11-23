@@ -1,0 +1,45 @@
+---
+title: "In-Class Ginkgo Data Exploration"
+author: "Ollie Murphy"
+date: "11/23/2021"
+output:  
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    toc_collapsed: TRUE
+    theme: "lumen"
+---
+
+```{r}
+require(here)
+ginkgo = read.csv(here("data", "ginkgo_data_2021.csv"))
+
+```
+
+### 1. Create a conditional boxplot of one of the continuous variables (notch) conditioned on the seeds_present column.
+
+```{r}
+boxplot(notch_depth ~ seeds_present, data = ginkgo, main = "Ginkgo Notch Depth\nby Seed Presence", xlab = "Seed Presence", ylab = "Notch Depth")
+```
+
+### 2. Based on your boxplot, do you think there is any difference betwen seed bearing and non seed bearing trees? Note: this is just a prelimnary data exploration, you may change your mind based on further analysis!
+
+- Based on the box plot, there seems to be a small amount of difference between seed and no-seed trees. Namely, though both have the same minimum notch length (0), the no-seed trees have a much wider variance of notch depth than those with seeds.
+
+### 3. Create a scatterplot of max leaf depth (x) and max leaf width (y).
+
+```{r}
+plot(ginkgo$max_depth, ginkgo$max_width, main = "Ginkgo Leaf Depth vs. Leaf Width", xlab = "Max Depth", ylab = "Max Width", col = as.numeric(factor(ginkgo$seeds_present)), pch = 20)
+```
+
+### 4. Qualitatively describe the patterns you see in the scatterplot.
+
+- As the max depth increases so does the max width. The slope is fairly steep until the max depth reaches about 70 mm, at which point it shows a sharp drop and then a much shallower slope.
+
+### 5. Explain how our data collection procedure might have violated the fixed x assumption.
+
+- The fixed x assumption states that there is no measurement error in our data. Because we were working with regular rulers and our eyes, and the leaves were dry and crumbly in a lot of cases, it is likely that there was at least minimal measurement error. Additionally, because many trees were located in close proximity of one another, it is possble that samples were mixed between trees prior to/during collection.
+
+### 6. Name 1 or more concepts you’d like me to review or discuss in more detail during our last two class meetings.
+
+- The by-hand ANOVA stuff in lab 10 is seriously kicking my butt. Would love a walk through of what we are actually doing there.

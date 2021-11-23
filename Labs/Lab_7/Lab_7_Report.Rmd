@@ -1,0 +1,194 @@
+---
+title: "Lab_7"
+author: "Ollie Murphy"
+date: "10/28/2021"
+output: html_document
+---
+
+### Penguin Parametric CI
+
+```{r}
+require("palmerpenguins")
+gentoo = subset(penguins, species == "Gentoo")
+```
+
+##### 1. What is the sample size, n? Show the code you used for the calculation and remember to check for missing data.
+
+- 123
+
+```{r}
+length(gentoo$bill_length_mm) - sum(is.na(gentoo$bill_length_mm))
+```
+
+##### 2. What is the sample standard deviation? Show the code you used for the calculation.
+
+- 3.082 mm
+
+```{r}
+sd(gentoo$bill_length_mm, na.rm = TRUE)
+```
+
+##### 3. What are the critical t-values? Show the R code you used for the calculation.
+
+- -1.979 and 1.979
+
+```{r}
+alpha = .05
+qt(
+  c((alpha/2), (1 - alpha/2)), 
+  (length(gentoo$bill_length_mm) - sum(is.na(gentoo$bill_length_mm))))
+```
+
+##### 4. What is the sample standard error? Show the R code you used for the calculation.
+
+- .278
+
+```{r}
+sse_mean = function(x)
+{
+  sd(x, na.rm = TRUE) / sqrt(length(x) - sum(is.na(x)))
+}
+
+sse_mean(gentoo$bill_length_mm)
+```
+
+##### 5. Finally, construct the CI and show the R code you used for the calculation.
+
+- 46.955 to 48.055
+
+```{r}
+(mean(gentoo$bill_length_mm, na.rm = TRUE) + ((sse_mean(gentoo$bill_length_mm) * qt(c((alpha/2),(1 - alpha/2)), length(gentoo$bill_length_mm) - sum(is.na(gentoo$bill_length_mm))))))
+```
+
+### Penguin Bootstrap CI
+
+```{r include=FALSE}
+require(boot)
+
+boot_mean = function(x, i)
+{
+  return(mean(x[i], na.rm = TRUE))
+}
+
+gentoo_boot =
+    boot(
+      data = gentoo$bill_length_mm,
+      statistic = boot_mean,
+      R = 10000)
+
+gentoo_mean = mean(gentoo_boot$t)
+gentoo_sse = sse_mean(gentoo_boot$t)
+gentoo_CI = quantile(gentoo_boot$t, c((alpha/2), (1-alpha/2)))
+```
+
+##### 6. What is the CI?
+
+- 46.979 to 48.047
+
+```{r}
+print(gentoo_CI)
+```
+
+
+##### 7. Show the code you used to call the boot() function.
+
+```{r, eval = FALSE}
+require(boot)
+
+boot_mean = function(x, i)
+{
+  return(mean(x[i], na.rm = TRUE))
+}
+
+gentoo_boot =
+    boot(
+      data = gentoo$bill_length_mm,
+      statistic = boot_mean,
+      R = 10000)
+
+gentoo_mean = mean(gentoo_boot$t)
+gentoo_sse = sse_mean(gentoo_boot$t)
+gentoo_CI = quantile(gentoo_boot$t, c((alpha/2), (1-alpha/2)))
+```
+
+##### 8. Show the r code you used to calculate the upper and lower 2.5% quantiles.
+
+```{r}
+quantile(gentoo_boot$t, c((alpha/2), (1-alpha/2)))
+```
+
+### Moth Rarefaction Sampler
+
+```{r}
+require(here)
+moths = read.csv(here("data", "moths.csv"))
+moth_dat = moths[,-1]
+```
+
+
+#### 9. Show your completed rarefaction_sampler() function.
+
+```{r}
+rarefaction_sampler = function(input_dat, n_iterations)
+{
+  n_input_rows = nrow(input_dat)
+  results_out = matrix(
+    nrow = n_iterations,
+    ncol = n_input_rows)
+  for(i in 1:n_iterations)
+  {
+    for(j in 1:n_input_rows)
+    {
+      rows_j = sample(n_input_rows, size = j, replace = TRUE)
+      t1 = input_dat[rows_j, ]
+      t2 = apply(t1, 2, sum)
+      results_out[i,j] = sum(t2>0)
+    }
+  }
+  return(results_out)
+}
+
+```
+
+##### 10. What did you find most difficult about building the function?
+  
+- Honestly, the thing I struggled with the most was keeping track of the commas and parenthesis as I added different variables. I kept accidentally deleting commas and assuming that the error message had to do with having missed replacing an "n".
+
+##### 11. Show the code you used to perform the simulations and construct the curve.
+
+```{r}
+rarefact = rarefaction_sampler(moth_dat, 10000)
+
+rare_mean = apply(rarefact, 2, mean)
+rare_quant = apply(rarefact, 2, quantile, probs = c(.025, .975))
+rare = t(rbind(rare_mean, rare_quant))
+```
+
+##### 12. Include your rarefaction curve plot in your report. Show the R-code you used to create your plot.
+
+```{r mothcurve, fig.width = 7, fig.height = 7}
+x = c(1:24)
+y1 = rare[,2]
+y2 = rare[,3]
+
+par(mar = c(4,4,4,2))
+matplot(
+  rare,
+  type = 'l',
+  xlab = "Number of Sites Visited",
+  ylab = "Number of Species Seen")
+title("How many moth species will you see \nif you visit x sites?", line = 1, cex = .7)
+  
+  
+legend(
+  "bottomright",
+  legend = c("Most Likely # Species Seen","2.5%", "97.5%"),
+  lty = c(1,2,3), col = c(1,2,3), inset = c(.1,.1)
+)
+polygon(c(x, rev(x)) , c(y1, rev(y2)),
+        col = rgb(255, 209, 220, 100, maxColor = 255), lty = 0)
+```
+
+##### 13. About how many sites should you visit if you want to see all of the moth species? Explain your reasoning using your rarefaction curve figure.
+
+- In order to have the highest possible chance of seeing all moth species, you should visit at least 22 sites, as that is the point on the curve where the confidence envelope on the plot is from 10 to 10. However, if you just wanted a very good chance of seeing all of the moth species, you should visit at least 9 of the sites, as that is the point where the mean is above 9.5 species, meaning that it rounds up to 10. 

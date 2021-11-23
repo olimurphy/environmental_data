@@ -1,0 +1,5 @@
+dpois(x = 8, lambda = 10.4)
+dbinom(x = 4, size = 6, p = .666)
+dbinom(x = 0, size = 6, p = .666)
+pbinom(4, 6, 2/3)
+1 - pbinom(3, 6, 2/3)

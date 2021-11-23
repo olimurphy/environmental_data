@@ -1,0 +1,166 @@
+---
+title: "Lab 4 Report"
+author: "Ollie Murphy"
+date: "10/2/2021"
+output: html_document
+---
+##### 1. Show code used to create vectors
+```{r}
+
+n_mean = 10.4
+n_sd = 2.4
+
+n_rnorm = function(n, mean = n_mean, sd = n_sd)
+{
+  rnorm(n)
+}
+  
+norm_17 = n_rnorm(17)
+norm_30 = n_rnorm(30)
+norm_300 = n_rnorm(300)
+norm_3000 = n_rnorm(3000)
+
+```
+
+##### 2. Include the R code you used to create your figure.
+```{r}
+#install.packages("here")
+#require here
+require(here)
+#where & how to save
+png(
+  filename = here("Labs", "Lab_4", "lab_04_hist_01.png"),
+  width = 1500, height = 1600,
+  res = 180, units = "px")
+#what to save 
+  par(mfrow = c(2,2))
+hist(norm_17, main = "17-Point Histogram")
+hist(norm_30, main = "30-Point Histogram")
+hist(norm_300, main = "300-Point Histogram")
+hist(norm_3000, main = "3000-Point Histogram")
+#and we're done
+dev.off()
+```
+##### 3. .png is in Moodle
+
+##### 4. Qualitatively describe the differences among the four histograms.
+
+- As the number of data points increases, the number of bins increases, as does the scale of the y axis. The general shape of the histograms changes-- the 17-point histogram has a gap, which none of the others have. Additionally, as the data points increase the shape of the histogram becomes more similar to a bell curve (normal distribution).
+
+##### 5. Explain why the shapes of the histograms are different.
+
+- When there are more data points (aka a larger sample), the points are more likely to noticeably follow the normal distribution. When there are fewer randomly generated data points, it is more likely that there will be obvious gaps that are obscured as the sample size goes up.
+
+##### 6. What are the parameters and their values for the standard Normal distribution?
+
+- number of observances, mean, standard deviation. number of observances does not have a set value, mean = 0, and standard deviation = 1.
+
+##### 7. Include the R code you used to create your figure.
+```{r}
+require(here)
+n_mean = 10.4
+n_sd = 2.4
+x = seq(-50, 50, length.out = 1000)
+y = dnorm(x, mean = n_mean, sd = n_sd)
+
+svg(
+  here("Labs", "Lab_4", "norm_1.svg"),
+  width = 4, height = 3
+)
+plot(x, y, main = "Normal PDF\nMean = 10.4, SD = 2.4", type = "l", xlim = c(4,17))
+abline(h = 0)
+dev.off()
+```
+##### 8. .svg is in Moodle
+
+
+##### 9. Show the R code you used to create one of the random datasets in your figure.
+```{r}
+set.seed(666)
+n_pts = 13
+x_min = 1
+x_max = 25
+x = runif(n = n_pts, min = x_min, max = x_max)
+dat1 = data.frame(x = x, y_observed = rnorm(n_pts))
+```
+
+##### 10. .png is in Moodle
+
+
+##### 11. Show the R code you used to create one of the random datasets in your figure
+
+```{r}
+#generate dataset
+set.seed(420)
+n1_pts = 69
+x_min = 1
+x_max = 2
+x = runif(n = n1_pts, min = x_min, max = x_max)
+dat2 = data.frame(x = x, y_observed = rnorm(n1_pts))
+
+#line_point_slope funtion
+line_point_slope = function(x, x1, y1, slope)
+{
+  get_y_intercept = 
+    function(x1, y1, slope) 
+      return(-(x1 * slope) + y1)
+  
+  linear = 
+    function(x, yint, slope) 
+      return(yint + x * slope)
+  
+  return(linear(x, get_y_intercept(x1, y1, slope), slope))
+}
+
+#plot dat2
+  plot(y_observed ~ x, data = dat2, pch = 8, main = "dat2 Plot")
+
+#fit curve
+guess_x = 1.4
+guess_y = 0.2
+guess_slope = .8
+
+curve(line_point_slope(x, guess_x, guess_y, guess_slope), add = TRUE)
+
+```
+
+##### 12. .png is in Moodle
+
+##### 13. Paste the R code you used to create create the columns of predicted values and residuals.
+
+```{r}
+#calculate and add predicted values
+dat2$y_predicted = line_point_slope(dat2$x, guess_x, guess_y, guess_slope)
+
+#calculate and add residuals
+dat2$resids = (dat2$y_observed - dat2$y_predicted)
+
+#residuals sum
+sum(dat2$resids)
+
+#absolute value residuals sum
+dat2$abs_resids = abs(dat2$resids)
+sum(dat2$abs_resids)
+```
+##### 14. In your report, include:
+
+- a histogram of the model’s residuals 
+
+```{r}
+hist(dat2$resids, main = "dat2 Fitted Line Residuals", xlab = "dat2 Residual Values", col =
+       rgb(255, 209, 220, maxColor = 255))
+```
+
+
+- a scatterplot of your model’s predicted values (on the x-axis) and residuals (on the y-axis).
+
+```{r}
+plot(dat2$y_predicted, dat2$resids, 
+     main = "dat2 Predicted Values vs. Residuals", 
+     xlab = "Predicted Values", ylab = "Residuals", 
+     pch = 22, 
+     col = 
+       rgb(200, 162, 200, maxColor = 255))
+```
+
+

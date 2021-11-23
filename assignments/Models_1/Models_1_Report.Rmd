@@ -1,0 +1,159 @@
+---
+title: "Models 1 Report"
+author: "Ollie Murphy"
+date: "11/7/2021"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    toc_collapsed: TRUE
+    theme: "lumen"
+---
+
+# Catastrophic Rate Histogram
+
+```{r, 'catratesetup', results = FALSE}
+require(here)
+catrate = read.csv(here("data", "catrate.csv"))
+```
+
+
+### 1. Create a histogram of the salamander reproduction catastrophic rates. 
+
+```{r, "catratehist"}
+hist(catrate$cat.rate, main = "Histogram of Salamander Reproduction\nCatastrophe Rates", xlab = "Catastrophe Rate")
+
+```
+
+# Normality Test
+
+### 2. Conduct a Shapiro-Wilk test of normality of the salamander catastrophic rates. Report the p-value and show the R-code you used to conduct the test.
+
+- p-value = .04097
+
+```{r, 'swcatrate'}
+shapiro.test(catrate$cat.rate)
+```
+
+### 3. What is the null hypothesis for the Shapiro test?
+
+- The null hypothesis for the Shapiro test is a normally distributed data set.
+
+### 4. Based on the Shapiro test results, is there strong evidence that the sample came from a non-normally-distributed population?
+
+- Yes, it is likely that the population is not normally distributed due to the low p-value.
+
+# T-Tests
+
+### 5. Show the code you used to conduct the t-test.
+
+```{r, "1sttest"}
+t.test(catrate$cat.rate, mu = 2/7)
+```
+
+### 6. State the null hypothesis of the test, in plain english.
+
+- The null hypothesis of this test is that the mean catastrophe rate is equal to the pond late-filling rate.
+
+### 7. Is this a one- or two-tailed test?
+
+- This is a two-tailed test because we are not interested in whether one value is larger or smaller than the other, only if they are different.
+
+### 8. What is the p-value from your t-test? Interpret the p-value as a false-positive rate using nontechnical English that a non-scientist would understand.
+
+- The p-value of this test is .01193. In nontechnical english, this p-value could be interpreted as a 1.2% false-positive rate, meaning that if there was no connection between catastrophe rate and pond late-filling rate, repeatedly collecting and comparing data would show that the average catastrophe rate and pond late filling rate are equal 1.2 % of the time.
+
+### 9. What is the confidence interval for the difference between the null hypothesis and alternative hypothesis means? Did it include zero?
+
+- The confidence interval for this t-test is 0.353 to 0.726, which does not include zero.
+
+### 10. Considering the results from your t-test, did you conclude that there was strong evidence to reject the null hypothesis?
+
+- Based on the results of this t-test, I have concluded that there is strong evidence to reject the null hypothesis that the mean catastrophe and pond filling rates are the same. I concluded this based on the low p-value, which indicates that the observed result would be true under the null hypothesis in only 1.2 % of repeated samplings.
+
+# Wilcoxon Test
+
+### 11. Show the code you used to conduct the test.
+
+```{r, "wilcoxtest", warning = FALSE}
+wilcox.test(catrate$cat.rate, mu = 2/7)
+```
+
+
+### 12. Compare the p-value with the p-value you got from the t-test.
+
+1. The p-value of the Wilcoxon test is .006275, which is slightly lower that the t-test p-value of .01193
+
+### 13. Considering the results from your rank sum test, did you conclude that there was strong evidence to reject the null hypothesis?
+
+- Much like with the t-test, the result of the Wilcoxon test has led me to reject the null hypothesis of mean catastrophe and late pond filling rate being the same. This conclusion was based on the p-value of .006275, which indicates that the observed value would occur under the null hypothesis in only 0.63% of repeated samplings.
+
+# Test Comparisons
+
+### 14. Compare the overall conclusions you could draw from the results of the two tests.
+
+- Both tests indicate that the null hypothesis should be discarded, but the Wilcoxon test's lower p-value makes a stronger case for the disproving of the null hypothesis.
+
+### 15. Considering the numerical and graphical data exploration, which test do you think was more appropriate for these data?
+
+- I would consider the Wilcoxon test to be more appropriate for these data because the t-test bases its results on data that resemble the Student's T distribution, which is similar to a normal distribution but with thicker tails. Because the salamander data is notably not normal (based on earlier Shapiro test), the Wilcoxon is likely a more appropriate option.
+
+# F L I P P E R S
+
+```{r, "penguinsetup"}
+require(palmerpenguins)
+
+penguin_dat = droplevels(subset(penguins, species != "Gentoo"))
+
+dat_adelie = subset(penguin_dat, species == "Adelie")
+dat_chinstrap = subset(penguin_dat, species == "Chinstrap")
+```
+
+### 16. Show the R-code you used to conduct tests of normality for the flipper lengths of Chinstrap and Adelie penguins.
+
+```{r, "penguinshapiro"}
+shapiro.test(dat_adelie$flipper_length_mm)
+shapiro.test(dat_chinstrap$flipper_length_mm) 
+```
+
+### 17. Interpret the test results. Do you conclude that the flipper lengths are normally-distributed for each species? Make sure your answers make reference to the test output.
+
+- Based on the results of the two Shapiro-Wilk normality tests, which test the null hypothesis that the data are normally distributed, I have concluded that both data sets are likely normally distributed. This conclusion is based on the high p-values produced by the test: for Adelie penguins, the p-value is .72, and for Chinstrap penguins, the p-value is .81. These p-values indicate the likelyhood of such a range of data being observed in a normal distribution.
+
+### 18. Create a single figure consisting of histograms of flipper lengths of Adelie and Chinstrap penguins.
+
+- See seperate file in Moodle submission.
+
+```{r, "penguinhist", eval = FALSE}
+png(
+  filename = here("Assignments", "Models_1", "models_1_hist.png"),
+  width = 1500, height = 800,
+  res = 180, units = "px")
+
+par(mfrow = c(1,2))
+
+hist(
+  dat_adelie$flipper_length_mm, 
+     main = "Adelie Flipper Lengths", 
+     xlab = "Flipper Length (mm)", 
+     col = rgb(255, 209, 220, 100, maxColor = 255)
+     )
+hist(
+  dat_chinstrap$flipper_length_mm, 
+     main = "Chinstrap Flipper Lengths", 
+     xlab = "Flipper Length (mm)",
+     col = rgb(137, 207, 240, 100, maxColor = 255)
+     )
+```
+
+# Flipper T-test
+
+### 19. State the alternative hypothesis of the test, in plain nontechnical English. 
+
+- The alternative hypothesis of the Adelie vs. Chinstrap flipper length t-test is that the mean flipper lengths of the two penguin species are different from one another. Because we are only interested in difference, not which is larger or smaller than the other, it is a two-tailed test.
+
+### 20. Include the code you used to conduct the t-test. 
+
+```{r, "ttestpenguin"}
+t.test(flipper_length_mm ~ species, data = penguin_dat)
+```

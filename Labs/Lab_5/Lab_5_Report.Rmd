@@ -1,0 +1,157 @@
+---
+title: "Lab 5 Report"
+author: "Ollie Murphy"
+date: "10/6/2021"
+output: html_document
+---
+##### 1. Show the R code you used to create exp_fun()
+
+```{r}
+exp_fun = function(x, a, b)
+{
+  return(a * exp(-b * x))
+}
+```
+
+##### 2. In your lab report, include a single figure containing four negative exponential curves.
+
+```{r}
+curve(
+  exp_fun(x, 1.9, .1), from = 0, to = 30, col = "black", lty = "solid", xlab = "X", ylab = "Y", main = "Four Negative Exponential Curves")
+
+curve(
+  exp_fun(x, 1.9, .3), col = "black", lty = "dotted", add = TRUE)
+
+curve(
+  exp_fun(x, 1.2, .2), col = "red", lty = "solid", add = TRUE)
+
+curve(
+  exp_fun(x, 1.2, .4), col = "red", lty = "dotted", add = TRUE)
+```
+
+#### Observe how the curves vary as you change the two parameters’ values. 
+
+##### 3. Qualitatively describe what happens to the curve as you vary parameter a.
+- As parameter a varies, the y value at x = 0 changes; when a is larger, the exponential curve starts higher up the y axis, and when a is smaller, the curve starts lower on the y axis.
+
+##### 4. Qualitatively describe what happens to the curve as you vary parameter b.
+- As parameter b increases, the y value decreases more rapidly as x increases. In other words, the higher the b value, the steeper the slope of the derivative of the curve.
+
+##### 5. In your lab report, include a single plot containing 6 Ricker curves
+
+```{r}
+ricker_fun = function(x, a, b)
+{
+  return(a * x * exp(-b * x))
+}
+
+curve(ricker_fun(x, 25, .1), col = "black", lty = "solid", from = 0, to = 75, xlab = "X", ylab = "Y", main = "Six Ricker Function Curves")
+curve(
+  ricker_fun(x, 20, .2), 
+  col = "black", lty = "dotted", add = TRUE)
+curve(
+  ricker_fun(x, 10, .2), 
+  col = "black", lty = "dotted", add = TRUE)
+curve(
+  ricker_fun(x, 75, .3), 
+  col = "red", lty = "solid", add = TRUE)
+curve(
+  ricker_fun(x, 50, .3), 
+  col = "red", lty = "dotted", add = TRUE)
+curve(
+  ricker_fun(x, 40, .3), 
+  col = "red", lty = "dotted", add = TRUE)
+```
+
+### Observe how the curves vary as you change the two parameters’ values. 
+
+##### 6. Qualitatively describe what happens to the curve as you vary parameter a.
+
+- As parameter a increases, so does the slope of the curve as x approaches 1/b. Visually, this means that the peak is higher and the slope of the first line section is steeper as a increases.
+
+##### 7. Qualitatively describe what happens to the curve as you vary parameter b.
+
+- As parameter b increases, the x value with the largest y value decreases. Visually, this means that the peak of the curve moves closer to the y axis as b increases.
+
+
+```{r}
+#install.packages("here")
+require(here)
+sal_dist = read.csv(here("Labs", "Lab_5", "salamander_dispersal.csv"))
+
+#line_point_slope funtion
+line_point_slope = function(x, x1, y1, slope)
+{
+  get_y_intercept = 
+    function(x1, y1, slope) 
+      return(-(x1 * slope) + y1)
+  
+  linear = 
+    function(x, yint, slope) 
+      return(yint + x * slope)
+  
+  return(linear(x, get_y_intercept(x1, y1, slope), slope))
+}
+
+```
+
+##### 8. Linear Model. Provide the values of the slope and intercept parameters you chose. Briefly describe how you chose the values.
+- I used a point from the center of the plot to visually fit my linear model-- (500, .4). I then chose a very small negative slope to reflect the very slow downward trend on the data.
+
+##### 9. Include a scatterplot of the salamander data with your fitted linear model.
+```{r}
+guess_x = 500
+guess_y = 0.4
+guess_slope = -.00043
+
+plot(sal_dist$dist.class, sal_dist$disp.rate.ftb, main = "Salamander First-Time Breeders\nLinear Fit", xlab = "Distance Class (m)", ylab = "Dispersal Rate")
+curve(line_point_slope(x, guess_x, guess_y, guess_slope), add = TRUE)
+
+```
+
+
+##### 10. Exponential Model. Provide the values of the a and b. Briefly describe how you chose the values.
+
+- I chose a = 1 and b = .0035. I chose a because I know that it is equal to the y value when x = 0, and that is about the upper limit of the y values.I originally used .8, but found that using 1 fit the data more closely. Finding b was a process of trial and error--I thought that it might be low, because it is related to slope and the slope of the linear fit was very small. I knew it would be a positive number because the function itself defines b as a negative number. From there, a few guesses helped me to hone in on .0035 as the b value.
+
+##### 11. Include a scatterplot of the salamander data with your fitted exponential model.
+
+```{r}
+plot(sal_dist$dist.class, sal_dist$disp.rate.ftb, main = "Salamander First-Time Breeders\nExponential Fit", xlab = "Distance Class (m)", ylab = "Dispersal Rate")
+curve(exp_fun(
+  x, 1, .0035), add = TRUE)
+```
+
+##### 12. Ricker Model. Provide the values of the a and b. Briefly describe how you chose the values.
+
+- I used a = .007 and b = .0035. In order to come up with a starting possible value for a and b, I considered the roles of a and b in the Ricker function: a is the slope at which the function grows linearly at first, and the reciprocal of b is equal to the maximum y value of the function. I started finding a by calculating the slope between the first few sets of points, which show a sharp increase. I came up with a = .0033. From there, I increased the value until the curve looked correct-- quite a bit, as I ended up with a = .007. For b, I began by finding the maximum y value I thought should come from the function (1), and then used the knowledge that x = 1/b and that x=400 where y ~ 1 to come up with b = 1/400 = .0025. From there, I tested values above and below that before eventually settling on b = .0035 as the best fit.
+
+##### 13. 
+
+```{r}
+plot(sal_dist$dist.class, sal_dist$disp.rate.ftb, main = "Salamander First-Time Breeders\nRicker Fit", xlab = "Distance Class (m)", ylab = "Dispersal Rate")
+curve(ricker_fun(
+  x, .007, .0037), add = TRUE)
+```
+
+##### 14. Show the R code you used to create your data frame of model residuals.
+
+```{r}
+sal_dist$linear = line_point_slope(sal_dist$dist.class, guess_x, guess_y, guess_slope)
+sal_dist$exp = exp_fun(sal_dist$dist.class, 1, .0035)
+sal_dist$ricker = ricker_fun(sal_dist$dist.class, .007, .0037)
+
+sal_dist$resids_linear = sal_dist$disp.rate.ftb - sal_dist$linear
+sal_dist$resids_exp = sal_dist$disp.rate.ftb - sal_dist$exp
+sal_dist$resids_ricker = sal_dist$disp.rate.ftb - sal_dist$ricker
+```
+
+##### 15. Include histograms of the residuals for each of your three models.
+
+```{r}
+par(mfrow = c(3, 1))
+hist(sal_dist$resids_linear, main = "Linear Fit Residuals", xlab = "Residual Value")
+hist(sal_dist$resids_exp, main = "Exponential Fit Residuals", xlab = "Residual Value")
+hist(sal_dist$resids_ricker, main = "Ricker Fit Residuals", xlab = "Residual Value")
+```
+

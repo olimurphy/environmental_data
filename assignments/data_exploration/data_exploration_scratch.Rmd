@@ -1,0 +1,65 @@
+---
+title: "Data_Exploration_Lecture"
+author: "Ollie Murphy"
+date: "9/22/2021"
+output: html_document
+---
+Install and Require "here" 
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+install.packages("here")
+require(here)
+```
+Load the Data into R
+```{r}
+dat_habitat = read.csv(here("data", "hab.sta.csv"))
+```
+###Sample Characteristics
+
+####Histograms
+#####elevation
+```{r}
+hist(dat_habitat$elev, main = "Habitat Elevation", xlab = "Elevation (m)")
+```
+#####aspect
+```{r}
+hist(dat_habitat$aspect, main = "Habitat Aspect", xlab = "Aspect (degrees)")
+```
+
+#####slope
+```{r}
+hist(dat_habitat$slope, main = "Habitat Slope", xlab = "Percent Slope (%)")
+```
+####Scatterplots
+```{r}
+line_point_slope = function(x, x1, y1, slope)
+{
+  get_y_intercept = 
+    function(x1, y1, slope) 
+      return(-(x1 * slope) + y1)
+  
+  linear = 
+    function(x, yint, slope) 
+      return(yint + x * slope)
+  
+  return(linear(x, get_y_intercept(x1, y1, slope), slope))
+}
+```
+
+#####elevation
+```{r}
+plot(dat_habitat$elev, dat_habitat$ba.tot, main = "Basal Area and Elevation", xlab = "Elevation (m)", ylab = "Total Basal Area")
+curve(line_point_slope(x, x1 = mean(dat_habitat$elev), y1 = mean(dat_habitat$ba.tot), slope = 0.03), col = "red", add = TRUE)
+```
+#####aspect
+```{r}
+plot(dat_habitat$aspect, dat_habitat$ba.tot, main = "Basal Area and Aspect", xlab = "Aspect (degrees)", ylab = "Total Basal Area")
+curve(line_point_slope(x, x1 = mean(dat_habitat$aspect), y1 = mean(dat_habitat$ba.tot), slope = 0.0), col = "red", add = TRUE)
+
+```
+#####slope
+```{r}
+plot(dat_habitat$slope, dat_habitat$ba.tot, main = "Basal Area and Slope", xlab = "Slope (%)", ylab = "Total Basal Area")
+curve(line_point_slope(x, x1 = mean(dat_habitat$slope), y1 = mean(dat_habitat$ba.tot), slope = 0.03), col = "red", add = TRUE)
+```
+

@@ -1,0 +1,142 @@
+---
+title: "Lab 9 Report"
+author: "Ollie Murphy"
+date: "11/17/2021"
+output:  
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    toc_collapsed: TRUE
+    theme: "lumen"
+---
+# Chi-square Tests
+
+```{r}
+require(here)
+birds = read.csv(here("data","bird.sta.csv"))
+hab = read.csv(here("data", "hab.sta.csv"))
+birdhab = merge(birds, hab, by = c("basin", "sub", "sta"))
+
+table(birdhab$s.edge, birdhab$BRCR > 0)
+
+br_creeper_table = table(birdhab$s.edge, birdhab$BRCR > 0)[, 2:1]
+
+chisq.test(br_creeper_table)
+```
+
+### 1. State the null hypothesis of the Chi-square test.
+- The null hypothesis of the chi-square test is that there is no correlation between the presence/absense of brown creepers and the edge/interior habitat conditions.
+
+### 2. Consider the results of your test and explain whether you think that Brown Creepers show a significant habitat preference.
+- When considering the results of the chi-square test on brown creeper habitat preferences, the low p-value of 1.386e-06 indicates that the null hypothesis, that there is no correlation between presense and habitat type, can be discarded. Because of this, I believe that brown creepers show a significant habitat preference.
+
+# Building Models for ANOVA
+
+```{r}
+require(palmerpenguins)
+```
+
+### 3. Show the R-code you can use to create a model fit (call it fit_species) of penguin body mass as predicted by penguin species.
+
+```{r}
+fit_species =
+  lm(
+    formula = body_mass_g ~ species,
+    data = penguins
+  )
+```
+
+### 4. Show the R-code you can use to create a model fit (call it fit_sex) of penguin body mass as predicted by sex.
+
+```{r}
+fit_species =
+  lm(
+    formula = body_mass_g ~ sex,
+    data = penguins
+  )
+```
+
+### 5. Show the R-code you can use to create a model fit (call it fit_both) of penguin body mass as predicted by species and sex.
+
+```{r}
+fit_both =
+    lm(
+    formula = body_mass_g ~ sex + species,
+    data = penguins
+  )
+```
+
+# Homogeneity Assumption: Graphical
+
+### 6. Include a conditional boxplot corresponding to your fit_species model.
+
+```{r}
+boxplot(body_mass_g ~ species, data = penguins,
+        main = "Conditional Boxplot:\nBody Mass by Species",
+        xlab = "Species",
+        ylab = "Body Mass (g)")
+```
+
+### 7. Include a conditional boxplot corresponding to your fit_sex model.
+
+```{r}
+boxplot(body_mass_g ~ sex, data = penguins,
+        main = "Conditional Boxplot:\nBody Mass by Sex",
+        xlab = "Sex",
+        ylab = "Body Mass (g)")
+```
+
+### 8. Include a conditional boxplot corresponding to your fit_both model. 
+
+```{r}
+boxplot(body_mass_g ~ species + sex, data = penguins,
+        main = "Conditional Boxplot:\nBody Mass by Sex and Species",
+        xlab = NULL,
+        ylab = "Body Mass (g)",
+        names = c("Female\nAdelie", "Female\nChinstrap", "Female\nGentoo", "Male\nAdelie", "Male\nChinstrap", "Male\nGentoo"),
+        las = 2)
+```
+
+### 9. Based on the shapes of the boxes, which of the models (if any) do you think may have problems fulfilling the homogeneity assumption?
+
+- Based on the shapes of the boxes in the plots, I think it is possible that both the species and species & sex models may have trouble fulfilling the homogeneity assumption. I believe this because, in the species box plot, all three heights vary indicating that the body masses do not equally vary among the three species. The discrepancy is less notable in the species & sex box plot, but it still appears that the male adelie penguins have a wider variance than the others, as do the female gentoo though to a lesser extent.
+
+# Homogeneity Assumption: Bartlett Test
+
+### 10. State the null hypothesis of the Bartlett test.
+
+- The null assumption of the Bartlett test is that the variances in each of the samples are the same.
+
+### 11. What was the p-value from the Bartlett test of homogeneity for observations grouped by species?
+
+- .0501
+
+```{r}
+bartlett.test(body_mass_g ~ species, data = penguins)
+```
+
+### 12. What was the p-value from the Bartlett test of homogeneity for observations grouped by sex?
+
+- .0319
+
+```{r}
+bartlett.test(body_mass_g ~ sex, data = penguins)
+
+```
+
+### 13. What was the p-value from the Bartlett test of homogeneity for observations grouped by both factors?
+
+- .1741
+
+```{r}
+dat_groups = aggregate(
+  body_mass_g ~ species + sex,
+  data = penguins,
+  FUN = c)
+
+bartlett.test(dat_groups$body_mass_g)
+```
+
+### 14. Based on the results of the Bartlett tests, do you anticipate any issues with heterogeneity in any of the models? 
+
+- Based on the results of the Bartlett tests, I anticipate that the sex specific model would have issues meeting the homogeneity assumption. I make this prediction becuase the p-value for that test is .0319, meaning that we can reject the null hypothesis of equal variance among the groups. It is also possible that the species-specific model will have trouble with heterogeneity, as its p-value is marginal to the significance level of .05 (.0501). There is not likely to be heterogeneity issues within the combined groups, as the p-value is significantly higher at .1741.

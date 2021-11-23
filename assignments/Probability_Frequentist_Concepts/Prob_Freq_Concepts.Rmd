@@ -1,0 +1,85 @@
+---
+title: "Probability and Frequentist Concepts"
+author: "Ollie Murphy"
+date: "10/20/2021"
+output: html_document
+---
+##### 1. What is the probability of observing a count of exactly 3 successes in a binomial distribution with parameters n = 4 and p = 0.75? 
+
+- 42.19 %
+
+```{r}
+dbinom(3, 4, .75)
+```
+
+##### 2. What is the probability of observing a count of 3 successes or fewer in a binomial distribution with parameters n = 4 and p = 0.75? 
+
+- 68.36 %
+
+```{r}
+pbinom(3, 4, .75)
+```
+
+##### 3. What is the probability of observing more than 3 successes in a binomial distribution with parameters n = 5 and p = 0.75? 
+
+- 23.73 %
+
+```{r}
+1 - pbinom(4, 5, .75)
+```
+
+##### 4. What is the probability of observing a value of less than 1.2 from a normally-distributed population with mean = 2 and standard deviation = 2? 
+
+- 34.46 %
+
+```{r}
+pnorm(1.2, 2, 2)
+```
+
+##### 5. What is the probability of observing a value of greater than 1.2 from a normally-distributed population with mean = 2 and standard deviation = 2?
+
+- 65.54 %
+
+```{r}
+1 - pnorm(1.2, 2, 2)
+```
+
+##### 6. What is the probability of observing a value between 1.2 and 3.2 from a normally-distributed population with mean = 2 and standard deviation = 2? 
+
+- 38.12 %
+
+```{r}
+pnorm(3.2, 2, 2) - pnorm(1.2, 2, 2)
+```
+
+##### 7. Describe how the shape of the histogram changes as you continue to press the sample button.
+
+- As I repeatedly press the sample button, the shape of the histogram becomes more and more similar to the shape of the beta distribution. 
+
+##### 8. Describe how the shape of the histogram changes as you continue to press the sample button.
+
+- Similar to the last one, the shape of the histogram becomes more and more similar to the shape of the distribution. However, it approaches the distribution shape more quickly, and the histogram has fewer outlier values/the width of the histogram is narrower.
+
+##### 9. Describe how the shape of the histogram changes as you continue to press the sample button.
+
+- In this case, the histogram quickly begins to resemble a normal distribution with the mean at the peak of the beta distribution. It is much narrower than the previous two sampling 
+
+##### 10. Why is there such a drastic change in the shape of the sampling distribution when you change the sample size from 1 to 2?
+
+- Because the sample size is much larger, the sampling distribution, which is influenced twice over by the sample size, is narrower than the previous. More specifically, as this is the sampling distribution of the mean, having a larger sample means more elements calculating the mean, and that outliers/values on the far ends of the range will have less weight than if there was only one element in the sample.
+
+##### 11. What are the two main factors that determine the width of the sampling distribution of the mean?
+
+- Sampling distribution of the mean is influenced by the standard deviation of the population and the sample size.
+
+##### 12. How many 3-character words are possible?
+
+- 15625 words
+
+```{r}
+25*25*25
+```
+
+##### 13. How many books would the Library contain if you added one additional position to the book size? Express your answer in terms of B.
+
+- B * 25. By adding one position to each book, the total number of positions for characters goes from 1,312,000 to 1,312,001. This means that the total number of possible books goes from 25^1,312,000 to 25^1,312,001. Increasing the exponent by one is the same as multiplying by 25 one additional time. So, B * 25.

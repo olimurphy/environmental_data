@@ -1,0 +1,84 @@
+---
+title: "Lab 10"
+author: "Ollie Murphy"
+date: "11/23/2021"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    toc_collapsed: TRUE
+    theme: "lumen"
+---
+
+# ANOVA by hand
+
+### 1. Submit the code you used to build your ANOVA by hand.
+
+```{r, results = FALSE}
+rm(list = ls())
+
+require(here)
+rope = read.csv(here("data", "rope.csv"))
+rope$rope.type = factor(rope$rope.type)
+                        
+n_obs = nrow(rope)
+n_groups = length(unique(rope$rope.type))
+                        
+ss_tot = sum((mean(rope$p.cut) - c(rope$p.cut))^2)
+df_tot = (n_obs - 1)
+                        
+agg_sq_resids =
+ aggregate(
+ x = rope$p.cut,
+ by = list(rope$rope.type), 
+ FUN = function(x) sum((mean(x) - c(x))^2))
+                    
+ss_within = sum(agg_sq_resids$x)
+df_within = (n_obs - n_groups)
+                        
+ss_among = (ss_tot - ss_within)
+df_among = (n_groups - 1)
+                        
+ms_within = ss_within / (n_obs - n_groups)
+ms_among  = ss_among / (n_groups - 1)
+                        
+f_ratio = ms_among / ms_within
+f_pval = pf(f_ratio, df_among, df_within, lower.tail = FALSE)
+
+```
+
+# Model Assumptions
+
+### 2. Examine the conditional boxplot in the Partitioning Variance: Within-Group section of the walkthrough. Based on the figure, do you think there are equal variances among the groups?
+
+- Based on the group conditional boxplot in Partitioning Variance: Within-Group, I do not this there are equal variances among the group. I concluded this based on the widely-varying heights of the boxes for each rope type.
+
+### 3. Conduct a Bartlett test to assess the homogeneity of variances of the percent cut among the rope type groups. Report the p-value.
+
+```{r}
+bartlett.test(p.cut ~ rope.type, data = rope)
+```
+- p = 0.00143
+
+### 4. Given your graphical assessment (question 2) and the Bartlett test, do you think an ANOVA-type analysis is appropriate on the raw data? Explain why or why not.
+
+- The low p value of the Bartlett test, which indicates that I can discard the null hypothesis of equal variance among the groups, agrees with my inital assessment of variation in the data set: it is nor equal among rope types. Because ANOVA is a group 1 model, which have an assumption of homoskedasicity (constant variance), ANOVA is likely not appropriate for this data set.
+
+# Model Coefficients and Group Means
+
+```{r}
+fit_rope_1 = lm(p.cut ~ rope.type, data = rope)
+summary(fit_rope_1)
+```
+
+### 5. Which rope type is the base case?
+
+- The "BLAZE" rope type is the base case in this table.
+
+### 6. What is the mean percent cut of the base case rope? Show your calculation using value(s) from the model coefficient table.
+
+- The mean percent cut of the BLAZE rope is 36.7 %. This did not require calculation, as the intercept coefficient is interpreted as the intercept mean.
+
+### 7. What is the mean percent cut rope type XTC? Show your calculation using value(s) from the model coefficient table.
+
+- The mean percent cut of the XTC rope is 26.5%. I calculated this by taking the intercept coefficient (36.7) and adding the XTC slope coefficient of -10.2%, which gave me 26.5%.

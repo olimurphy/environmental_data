@@ -1,0 +1,88 @@
+---
+title: "Data Camp Class Assignment"
+subtitle: "Ollie Murphy"
+author: "working with Hannah Korte"
+date: "9/11/2021"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+a = "Ollie"
+b1 = 45.6
+b2 = "45.6"
+c1 = 0:3
+```
+Q1: What type of data is contained in the variable a
+
+- character
+
+Q2: What type of data is contained in the variable b1
+
+- numeric
+
+Q3: What type of data is contained in the variable b2
+
+- character
+
+Q4: What happens when you add b1 and b2 and why?
+
+- Error in b1 + b2 : non-numeric argument to binary operator. The variables cannot be added because R cannot do arithmetic with character variables.
+
+Q5: Are the variables b1 and c1 of the same type?
+
+- no
+
+Q6: Explain what happens when you add b1 and c1. Consider both the number of elements in each variable and the data types.
+
+- when you add b1 and c1, R adds the numeric value of b1 (45.6) to each number in the c1 vector, resulting in 45.6 46.6 47.6 48.6
+
+Q7: Show the R code you used to create v1.
+```{r echo=TRUE}
+v1 = c(-2:2)
+v1
+```
+Q8: Show the R code you used to create v2.
+```{r echo=TRUE}
+v2 = v1 * 3
+v2
+```
+Q9: Show the R code you used to calculate the sum of elements in v2.
+```{r echo=TRUE}
+sum(v2)
+```
+Q10: Show the code you used to create mat_1.
+```{r}
+vec_4 = 1:12
+mat_1 = matrix(vec_4, nrow = 3, ncol = 4, byrow = TRUE)
+mat_1
+```
+Q11: Show the code you used to create mat_2.
+```{r}
+mat_2 = matrix(vec_4, nrow = 3, ncol = 4, byrow = FALSE)
+mat_2
+```
+Q12: Show the R code you used to create my_list_1.
+```{r}
+my_list_1 = list("two" = 5.2, "one" = "five point two", "three" = c(0:5))
+```
+Q13: Show the R code that would select the third element of the list.
+```{r}
+my_list_1[3]
+```
+Q14: Show the R code that selects the list element with the name “one”.
+```{r}
+my_list_1$one
+my_list_1[["one"]]
+```
+Q15: Show the R code that you used to create my_bool_vec.
+```{r}
+my_vec = rep(1:3, 5)
+my_bool_vec = c(my_vec == 3)
+data.frame(my_vec, my_bool_vec)
+```
+Q16: Show the R code that you used to perform the subsetting.
+```{r}
+my_vec[my_bool_vec]
+```
+

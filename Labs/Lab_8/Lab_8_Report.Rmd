@@ -1,0 +1,221 @@
+---
+title: "Lab_8_Report"
+author: "Ollie Murphy"
+date: "11/3/2021"
+output: html_document
+---
+
+### Penguin Boot
+###### (very cute)
+
+```{r, 'initialsetup', collapse = TRUE}
+#install.packages("simpleboot")
+
+require(here)
+require(simpleboot)
+require(palmerpenguins)
+
+set.seed(49549)
+
+adelie = subset(penguins, species == "Adelie")
+chinstrap = subset(penguins, species == "Chinstrap")
+
+boot_mean = function(x, i)
+{
+  return(mean(x[i], na.rm = TRUE))
+}
+
+pen_boot = two.boot(adelie$flipper_length_mm, 
+         chinstrap$flipper_length_mm, 
+         boot_mean, 10000)
+```
+
+##### 1. Calculate the standard deviation of the differences in mean flipper length from your bootstrap simulation. Show the R-code you used to find do the calculation.
+
+- 1.0011
+
+```{r, 'sdpenboot'}
+sd(pen_boot$t)
+```
+
+##### 2. Include your histogram in your lab report.
+
+```{r, 'penboothist'}
+hist(pen_boot$t, main = "Mean Flipper Length Differences\nAdelie vs. Chinstrap", xlab = "Mean Difference in Flipper Length (mm)")
+```
+
+##### 3. What was the 95% bootstrap CI you calculated using quantile()? 
+
+- -7.836 to -3.898
+
+```{r, 'quantpenboot'}
+quantile(pen_boot$t, c(.025, .975))
+```
+
+##### 4. Do you think the resampled differences in means follow a skewed distribution? Your answer should make reference to the mean, median, and histogram of the differences in means.
+
+- I do not believe that the resampled differences follow a skewed distribution. I arrived at this conclusion for two main reasons: first, the histogram of the difference of means is symmetrical. This is a reflection of the second reason I arrived at the conclusion: the mean and median are about equal. This means that there are roughly the same number of values on either side of the mean, so the results are distributed evenly (not skewed) around the mean.
+
+### Penguin ECDF
+
+##### 5. Show the R-code you used to create pen_ecdf()
+
+```{r, 'penecdf'}
+pen_ecdf = ecdf(pen_boot$t)
+```
+
+##### 6. What is the probability, according to the empirical distribution function, of observing a mean difference of -4.5 or greater? Show the R code you used to perform the calculation.
+
+- 8.84%
+
+```{r, 'q6'}
+1 - pen_ecdf(-4.5)
+```
+
+##### 7. What is the probability, according to the empirical distribution function, of observing a mean difference of -8 or smaller? Show the R code you used to perform the calculation.
+
+- 1.69%
+
+```{r, 'q7'}
+pen_ecdf(-8)
+```
+
+### Hypotheses
+
+##### 8. State the null and alternative hypotheses of a two-sample, two-tailed test for the difference in mean flipper lengths between the two penguin species.
+
+- The null hypothesis for this scenario would be there is no difference in the mean flipper length of the two species. This would be demonstrated by a high p-value when evaluating the t test. The alternative hypothesis would be that there is measurable difference in the mean flipper length of the two species, demonstrated by a low p-value from the same t test.
+
+### Non-Parametric Pine Test
+
+##### 9. What was the p-value? Show the R-code you used to find out.
+
+- .1005
+
+```{r, 'wilcoxpine', warning = FALSE}
+veg = read.csv(here("data", "vegdata.csv"))
+
+dat_veg = droplevels(subset(veg, treatment %in% c("control", "clipped")))
+
+wilcox.test(pine ~ treatment, data = dat_veg)
+```
+
+### Bootstrap Pines
+
+```{r, 'pineboot'}
+require(simpleboot)
+set.seed(49549)
+
+tree_boot = 
+  two.boot(
+  subset(dat_veg, treatment == "clipped")$pine,
+  subset(dat_veg, treatment == "control")$pine,
+  FUN = mean,
+  R = 1000,
+  na.rm = TRUE
+)
+```
+
+##### 10. What were the endpoints of your bootstrap CI? Show the R-code you used to find out.
+
+- 4.241 to 28.638
+
+```{r, 'quantpine'}
+quantile(tree_boot$t, c(.025, .975))
+```
+
+##### 11. What is the observed difference in mean tree counts and does it fall within the 95% bootstrap CI?
+
+- The observed difference in mean tree counts is 16, which falls between 4.241 and 28.638
+
+```{r, 'cipine'}
+mean(subset(dat_veg, treatment == "clipped")$pine) -
+  mean(subset(dat_veg, treatment == "control")$pine)
+```
+### Resampling Model Coefficients
+
+```{r, 'sidisetup', results = FALSE}
+dat_bird = read.csv(here("data", "bird.sub.csv"))
+dat_habitat = read.csv(here("data", "hab.sub.csv"))
+
+dat_all = merge(
+  dat_bird,
+  dat_habitat,
+  by = c("basin", "sub"))
+
+b_sidi_mean = mean(dat_all$b.sidi, ra.rm = TRUE)
+b_sidi_sd = sd(dat_all$b.sidi, na.rm = TRUE)
+
+dat_all$b.sidi.standardized = (dat_all$b.sidi - b_sidi_mean)/b_sidi_sd
+
+s_sidi_mean = mean(dat_all$s.sidi, ra.rm = TRUE)
+s_sidi_sd = sd(dat_all$s.sidi, na.rm = TRUE)
+
+dat_all$s.sidi.standardized = (dat_all$s.sidi - s_sidi_mean)/s_sidi_sd
+```
+
+##### 12. Briefly describe the Simpson diversity index, and explain what it quantifies.
+
+- There are two Simpson's diversity indices included in this data set: b.sidi, which looks at breeding birds, and s.sidi, which looks at types of vegetative cover. B.sidi represents the diversity of breeding birds present at a site, and s.sidi specifically represents the diversity in landscape composition as defined by the vegetation seral stage.
+
+##### 13. Show the code you used to z-standardize the s.sidi column.
+
+```{r, 'ssidiz', eval = FALSE}
+s_sidi_mean = mean(dat_all$s.sidi, ra.rm = TRUE)
+s_sidi_sd = sd(dat_all$s.sidi, na.rm = TRUE)
+
+dat_all$s.sidi.standardized = (dat_all$s.sidi - s_sidi_mean)/s_sidi_sd
+```
+
+##### 14. Show the code for your completed loop.
+
+```{r, 'sidiloop'}
+set.seed(49549)
+fit_1 = lm(b.sidi ~ s.sidi, data = dat_all)
+slope_observed = coef(fit_1)[2]
+
+dat_1 =
+  subset(
+    dat_all,
+    select = c(b.sidi, s.sidi))
+
+m = 10000
+result = numeric(m)
+
+for(i in 1:m)
+{
+  index_1 = sample(nrow(dat_1), replace = TRUE)
+  index_2 = sample(nrow(dat_1), replace = TRUE)
+  
+  dat_resampled_i =
+    data.frame(
+      b.sidi = dat_1$b.sidi[index_1],
+      s.sidi = dat_1$s.sidi[index_2]
+    )
+  
+  fit_resampled_i = lm(b.sidi ~ s.sidi, data = dat_resampled_i)
+  result[i] = coef(fit_resampled_i)[2]
+}
+head(result)
+```
+
+##### 15. In your report, include a plot of your histogram with vertical lines showing the observed slope and the critical value from the resampled MC slopes.
+
+```{r, 'sidihist'}
+hist(result, main = "Monte Carlo Resampling:\nSimpson's Veg & Bird Diversity Indices", xlab = "Calculated Slope Parameter")
+abline(v = slope_observed, col = "blue", lwd = 2)
+abline(v = quantile(result, .05), col = "red", lty = "dotted", lwd = 2)
+```
+
+##### 16. What was your critical value? Was the observed slope less than the critical value?
+
+- The critical value for the results of this MC resample loop is -.013, which is larger than the observed slope of -.024
+
+```{r, 'sidicritval'}
+quantile(result, .05)
+print(slope_observed)
+```
+
+##### 17. What is your conclusion regarding the evidence of a negative relationship between vegetation cover diversity and bird diversity? Make sure to justify your conclusions using the results of your analysis.
+
+- Based on the critical value of the Monte Carlo resampling compared to the observed slope, it is my conclusion that there is evidence of a negative relationship between vegetation cover density and bird diversity. I came to this conclusion because according to the critical value of the MC sampling, if there was no relationship between the two factors, we would expect to see a slope coefficient of less than -.013 in only 5% of our repeated samples--reversed, we would expect to see a slope of greater than -.013 in 95% of our samples. Because the observed slope is less than the critical value, there is a less that 5% chance that the the observed value would be the result in repeated MC sampling, allowing us to disprove the null hypothesis of there being no negative relationship between the variables.
