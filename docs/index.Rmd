@@ -1,0 +1,12 @@
+---
+title: "Ollie's Environmental Data Homepage"
+author: "Ollie Murphy"
+date: "11/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Welcome! This is Ollie's class page for Analysis of Environmental Data Fall 2021.
