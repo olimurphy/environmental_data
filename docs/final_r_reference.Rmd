@@ -1,0 +1,437 @@
+---
+title: "602 Final Project"
+author: "Ollie Murphy"
+date: "12/16/2021"
+output: 
+  html_document:
+    theme: "lumen"
+---
+
+# R Reference Guide {.tabset .tabset-pills}
+
+## Loading Data and Packages
+
+### library() and require()
+
+require() is used to pull in a package that has already been installed using install.package(), or that comes installed with R.
+
+```{r}
+require(here)
+```
+
+library() does the same thing as require()
+
+```{r}
+library(palmerpenguins)
+```
+
+### here() and read.csv()
+
+here() tells R where to look for a specified file. The "here" directory is set on a project-by-project basis, and the arguments of the function lead R through a file path from that location to the named file.
+
+- In the example below, my "here" directory is my "environmental_data" folder in my Fall_2021 folder. The data I am loading is called delomys.csv, and it is located in the "data" folder in my "environmental_data" folder.
+
+read.csv allows R to import the data stored in a csv file. "ginkgo = data.frame() tells R to use the csv data to create a data frame with the name "ginkgo".
+
+```{r}
+ginkgo = data.frame(read.csv(here("data", "ginkgo_data_2021.csv")))
+```
+
+## Data Structures
+
+### c()
+
+The function c() combines or concatenates its arguments into a vector (a 1-dimensional data structure consisting of 1 or more elements).
+
+- All of the elements must be of the same type.
+  - I can’t combine character and numeric types in the same call to c()
+
+Here’s two examples using numeric and character data types:
+
+``` {r}
+## Create a vector of numbers:
+num_vec  = c(1, 4, 8, 9, 13, 14)
+
+## Create a vector of characters:
+char_vec = c("a", "fish", "data is cool")
+```
+
+I can show the contents of a vector by typing the name of the vector, or using the print() function.
+
+``` {r}
+## Typing the name of the vector into the console prints the contents
+num_vec
+
+## [1]  1  4  8  9 13 14
+
+## The print() function accomplishes the same task:
+print(char_vec)
+
+## [1] "a"            "fish"         "data is cool"
+```
+
+### length()
+
+Length can be used to find the length (number of entries) of a vector or object.
+
+```{r}
+print(num_vec)
+length(num_vec)
+```
+
+```{r}
+print(char_vec)
+length(char_vec)
+```
+
+### matrix()
+
+The matrix function is used to create a matrix from a given set of values. There are several arguments used to create the matrix:
+
+- data: used to define the contents of the matrix. Often a vector. Optional -- you can create an empty matrix that is later filled, often as a result of a simulation loop.
+- nrow: used to define the number of rows in a matrix.
+- ncol: used to define the number of columns in a matrix.
+- byrow: tells R whether to fill the matrix horizontally or vertically. Defaults to FALSE (vertical fill).
+
+```{r}
+num_mat_1 = matrix(data = num_vec, nrow = 2, ncol = 3, byrow = FALSE)
+
+num_mat_2 = matrix(data = num_vec, nrow = 2, ncol = 3, byrow = TRUE)
+```
+
+### data.frame()
+
+A dataframe is a tightly coupled collection of variables which share many of the properties of matrices and lists. They are the fundamental data structure for many R functions. 
+
+Dataframes often have row and column names. Row names can be assigned using the row.names argument, which can refer to either an existing row in the dataframe that contains values to be assigned as the names, or a vector which contains the desired names. Column names are generated using the values inputted for the data. THey can be changed using the setNames function.
+
+Data frames can be created using the data.frame() function with a matrix or vector...
+
+```{r}
+num_dat = data.frame(num_mat_1, row.names = c("a", "b"))
+
+setNames(num_dat, c("x1", "x2", "x3"))
+```
+
+...or by loading in a dataset from a file such as a .csv (see here() and read.csv()).
+
+The content of a dataframe can be explored using a few different functions:
+
+- nrow(): prints the number of rows in a dataframe
+
+```{r}
+nrow(ginkgo)
+```
+
+- ncol(): prints the number of columns in a dataframe
+
+```{r}
+ncol(ginkgo)
+```
+
+- dim(): prints the dimensions of a dataframe; both rows and columns
+
+```{r}
+dim(ginkgo)
+```
+
+## Subsetting
+
+Subsetting allows you to call only certain sections of a larger data set. We use three main methods to subset:
+
+### $
+- used to select a particular column of data by name. (note that in these examples I am using the head() function to only print the first 6 values)
+
+```{r}
+head(ginkgo$max_width)
+```
+
+### [ ]
+- subset by position. The square brackets can be used to select rows, columns, or even specific values by specifying a position.
+
+```{r}
+#select the first row
+head(ginkgo[1,])
+
+#select the third column
+head(ginkgo[,3])
+
+#select the element in row 2, column 3
+ginkgo[2, 3]
+```
+
+### subset()
+- the subset function is used to, shocker, subset from a matrix, data frame, or vector. There are three main arguments:
+
+  - x: object to be subsetted. This is the matrix, vector, or data frame.
+
+  - subset: logical expression indicating which elements or rows to keep
+
+  - select: expression indicating which columns to select from the data frame
+
+```{r}
+# select only Adelie penguins from the penguins dataset
+
+head(subset(penguins, species == "Adelie"))
+
+# in this case, == means equal to. You can also use expressions like <, >, >=, etc.
+```
+
+## Numerical Data Exploration
+
+### summary()
+
+- displays summary statistics of the data frame by column. Statistics include counts for nominal data, and min, max, mean, and quantile for numeric data.
+
+```{r}
+summary(penguins)
+```
+
+### mean()
+
+- mean() prints the mean of a numeric data set. For a data set like penguins, we need to specify a numeric subset in order for the function to work.
+
+  - NOTE! mean() will not work if your data set includes NA values. In order to use  a data set that includes NAs, you must add the "na.rm = TRUE" argument, which tells R to remove all NA values.
+
+```{r}
+#mean flipper length in mm, NA values removed
+
+mean(penguins$flipper_length_mm, na.rm = TRUE)
+```
+
+### sd()
+
+- sd() prints the standard deviation from the mean of a numeric data set. Like mean, a subset of the penguins data must be specified in order to use this function.
+
+  - NOTE! sd() also uses na.rm.
+
+```{r}
+#standard deviation from the mean of flipper lengths in mm, NA values removed
+
+sd(penguins$flipper_length_mm, na.rm = TRUE)
+```
+
+## Graphical Data Exploration
+
+### Scatterplot
+
+- plot() creates a scatterplot of data using a number of arguments:
+
+  - x and y: specifies the data being plotted
+
+  - col: specifies color of the points. Color can be specified using syntax of "lightblue" or "red", or using the rgb() function. Acceptable color names can be called using the colors() funciton. In the example below, I use rgb() to create a baby pink plot.
+
+  - pch: an integer specifying the symbol used for each point. There are a lot of them!
+
+  - cex: a numerical value giving the amount by which plotting text and symbols should be magnified. Default value is 1.
+
+  - main: sets the title for the plot
+
+  - xlab: sets the x axis label
+
+  - ylab: sets the y axis label
+
+  - xlim: sets the min and max of the x axis values
+
+  - ylim: sets the min and max of the y axis values
+
+```{r}
+# scatterplot of max leaf depth and max leaf width
+
+plot(
+  ginkgo$max_depth, ginkgo$max_width,
+  col = rgb(255, 209, 220, 100, maxColor = 255),
+  pch = 3, cex = .75,
+  main = "Ginkgo Leaf Depth vs. Width",
+  xlab = "Max Leaf Depth (mm)",
+  ylab = "Max Leaf Width (mm)",
+  xlim = c(10, 140),
+  ylim = c(15, 150)
+)
+```
+
+### Histogram
+
+- creates a histogram of the specified data set.
+
+```{r}
+hist(
+  penguins$flipper_length_mm,
+  breaks = c(170, 180, 190, 200, 210, 220, 230, 240),
+  main = "Histogram of Penguin Flipper Length",
+  xlab = "Flipper Length (mm)",
+  col = "lightblue"
+)
+```
+
+### Boxplot
+
+- boxplot() is used to create box-and-whisker plots of a data set. the boxplot() function allows you to specify a conditioning variable, which will create multiple plots of the data subset by the specified variable.
+
+```{r}
+#a simple boxplot
+boxplot(
+  ginkgo$petiole_length,
+  main = "Ginkgo Petiole Length",
+  col = "lavender",
+  ylab = "Petiole Length (mm)"
+)
+```
+
+```{r}
+# a conditional boxplot: petiole length conditioned by whether or not the tree had seeds present.
+
+boxplot(
+  data = ginkgo, petiole_length ~ seeds_present,
+  main = "Ginkgo Petiole Length \nby Presence of Seeds",
+  xlab =  "Seed Presence",
+  ylab = "Petiole Length (mm)",
+  names = c("Absent", "Present"),
+  col = c("lemonchiffon", "azure2")
+)
+```
+
+### Multi-figure panels
+
+- created using par(mfrow = ) where mfrow = a vector specifying the number of figures in each row and column.
+
+```{r}
+par(mfrow = c(2, 2))
+  hist(
+    ginkgo$petiole_length,
+    main = "Histogram of Ginkgo Petiole Length",
+    xlab = "Petiole Length (mm)",
+    col = "seagreen"
+  )
+  
+  hist(
+    ginkgo$max_width,
+    main = "Histogram of Ginkgo Leaf Width",
+    xlab = "Leaf Width (mm)",
+    col = "skyblue"
+  )
+  
+  hist(
+    ginkgo$max_depth,
+    main = "Histogram of Ginkgo Leaf Depth",
+    xlab = "Leaf Depth (mm)",
+    col = "salmon"
+  )
+  
+  hist(
+    ginkgo$notch_depth,
+    main = "Histogram of Ginkgo Notch Depth",
+    xlab = "Notch Depth (mm)",
+    col = "plum2"
+  )
+    
+  
+```
+
+## Distribution Functions
+
+Distribution functions are used with a set of observed data to answer questions about the probability of certain outcomes. The functions in R can be used to find the cumulative density/mass, probability density/mass, and quantile for a given data set, assuming a specific type of distribution.
+
+### Probability density/mass function
+
+- Relative likelihood of x
+  
+  - Am I more likely to observe a fish that is 20 cm or 11 cm?
+      
+- dnorm() or dbinom()
+  
+  - First argument is x, a vector of quantiles
+  
+### Cumulative density/mass function
+
+- Likelihood of a value of x or smaller
+    
+  - What is the probability of catching a fish that is less than 20 cm long?
+    
+- pnorm() or pbinom()
+  
+  - First argument is q, a vector of quantiles
+    
+### Quantile function
+
+- What is the value of x at the nth percentile
+    
+  - How long is a fish in the 90th percentile?
+  
+- qnorm() or qbinom() 
+  
+  - First argument is p, a vector of probabilities
+    
+With R, we can find these values based on whether we are assuming a normal distribution of the data or a binomial distribution of the data.
+
+### Normal distribution
+
+- A normally-distributed data set is a continuous data set that, when graphed, follows a bell shape with most values clustered around a central region and symmetrical tails tapering off in either direction. Because it is a continuous distribution, we say cumulative/probability density.
+  
+  - require two additional arguments
+  
+    - mean = mean of distribution. default value is 0.
+  
+    - sd = standard deviation of distribution. default value is 0.
+  
+### Binomial distribution
+
+- A binomial distribution is a discrete distribution used when there are two mutually exclusive outcomes of a trial, which is performed repeatedly (such as a coin flip). Because it is a discrete distribution, we say cumulative/probability mass.
+  
+  - require two additional arguments
+  
+    - size = number of trials
+    
+    - prob = probability of success on each trial
+  
+Combining these functions and distributions, we get six probability distribution functions. All six require slightly different arguments, depending on the type of distribution and function.
+
+#### dnorm()
+
+- probability of observing a value of 2 in a normally distributed population with a mean of 1 and a standard deviation of .5
+
+```{r}
+dnorm(x = 2, mean = 1, sd = .5)
+```
+
+#### pnorm()
+
+- probability of observing a value of 2 or lower in a normally distributed population with a mean of 1 and a standard deviation of .5
+  
+```{r}
+pnorm(q = 2, mean = 1, sd = .5)
+```
+
+#### qnorm()
+
+- median value (50th percentile) in a normally directibuted population with a mean of 1 and a standard deviation of .5
+  
+```{r}
+qnorm(p = .5, mean = 1, sd = .5)
+```
+
+#### dbinom()
+
+- probability of observing a value of exactly 4 in a binomial distribution with size = 20 and prob = .4
+  
+```{r}
+dbinom(x = 4, size = 20, prob = .4)
+```
+
+#### pbinom()
+
+- probability of observing a value of 4 or lower in a binomial distribution with size = 20 and prob = .4
+  
+```{r}
+pbinom(q = 4, size = 20, prob = .4)
+```
+  
+#### qbinom()
+  
+- median value (50th percentile) of a binomial distribution with size = 20 and prob = .4
+  
+```{r}
+qbinom(p = .5, size = 20, prob = .4)
+```
+  
+  

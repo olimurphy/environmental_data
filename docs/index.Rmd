@@ -1,8 +1,10 @@
 ---
-title: "Ollie's Environmental Data Homepage"
+title: "Environmental Data Homepage (Fall 2021)"
 author: "Ollie Murphy"
 date: "11/23/2021"
-output: html_document
+output: 
+  html_document:
+    theme: "lumen"
 ---
 
 ```{r setup, include=FALSE}
@@ -10,3 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Welcome! This is Ollie's class page for Analysis of Environmental Data Fall 2021.
+
+[Final Project: R Reference Guides](final_r_reference.html)
+

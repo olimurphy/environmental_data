@@ -1,0 +1,206 @@
+---
+title: "Lab 11 Report"
+author: "Ollie Murphy"
+date: "12/12/2021"
+output: html_document
+---
+
+# Define Preliminary Functions
+
+```{r}
+require(here)
+dat_bird = read.csv(here("data", "bird.sub.csv"))
+dat_hab = read.csv(here("data", "hab.sub.csv"))
+birdhab = merge(dat_bird, dat_hab, by = c("basin", "sub"))
+
+linear_simulator = function(x, y_int, slope, st_dev)
+{
+  y_int + (x * slope) + rnorm(length(x), sd = st_dev) 
+}
+
+linear_sim_fit = function(x, slope, y_int, st_dev)
+{
+  y_sim = linear_simulator(
+    x = x,
+    y_int = y_int,
+    slope = slope,
+    st_dev = st_dev
+  )
+  fit_sim = lm(y_sim ~ x)
+  return(fit_sim)
+}
+
+fit_1 = lm(BRCR ~ ls, data = birdhab)
+fit_1_summary = summary(fit_1)
+sd_obs = fit_1_summary$sigma
+int_obs = fit_1_summary$coefficients[1,1]
+slope_obs = fit_1_summary$coefficients[2,1]
+```
+
+# Dispersion and Statistical Power
+
+```{r}
+alpha = 0.05
+n_sims = 100
+p_vals = numeric(n_sims)
+
+n_sds = 20
+pop_sds = seq(from = 0.01, to = 1.5, length.out = n_sds)
+
+pop_sd_power = numeric(length(pop_sds))
+
+for(j in 1:length(pop_sds))
+{
+  pop_sd_j = pop_sds[j]
+  for(i in 1:n_sims)
+  {
+    fit_sim = linear_sim_fit(
+        x = birdhab$ls,
+        y_int = int_obs,
+        slope = slope_obs,
+        st_dev = pop_sds[j]
+        )
+    p_vals[i] = summary(fit_sim)$coefficients[2, 'Pr(>|t|)']
+  }
+  pop_sd_power[j] = sum(p_vals < alpha) / n_sims
+}
+
+sim_output_dispersion = data.frame(
+  sd = pop_sds,
+  power = pop_sd_power)
+```
+
+### 1. Include a figure of your line plot in your report.
+
+```{r}
+plot(
+  power ~ sd, data = sim_output_dispersion,
+  type = 'l', xlab = "Standard Deviation", ylab = "Power"
+)
+
+abline(v = sd_obs, lty = 2, col = 'red')
+```
+
+### 2. Why do you think that statistical power decreases as population dispersion increases?
+
+- Statistical power refers to the probability that we correctly reject a false null hypothesis. This can be visualized through the overlapping regions of the curves of the null hypothesis and alternate hypothesis. The area of the region of the alternative hypothesis to the left of y = alpha is known as beta, and the power is equal to 1 - beta. As such, power falls as beta rises. Population dispersion, on the other hand, is reflected through the standard deviation of a population. Population standard deviation directly affects statistical power by changing the width of the sampling distribution. As standard deviation goes up, the curves become wider, meaning that there is a larger region of overlap and beta increases, thus decreasing the power.
+
+# Contour Plot
+
+```{r}
+alpha = 0.05
+
+# Start with a small number
+n_sims = 100
+p_vals = numeric(n_sims)
+
+# What was the observed standard deviation?
+sd_obs
+
+# specify the number of different standard deviation values to simulate:
+# Start with a small number
+n_sds = 20
+pop_sds = seq(from = 0.05, to = 1.5, length.out = n_sds)
+
+pop_sd_power = numeric(n_sds)
+
+sample_sizes = seq(5, 100)
+
+sim_output_3 = matrix(nrow = length(pop_sds), ncol = length(sample_sizes))
+
+for(k in 1:length(pop_sds))
+{
+  pop_sd_k = pop_sds[k]
+  
+  for(j in 1:length(sample_sizes))
+  {
+    x_vals = seq(0, 100, length.out = sample_sizes[j])
+    
+    for(i in 1:n_sims)
+    {
+     fit_sim = linear_sim_fit(
+        x = x_vals,
+        y_int = int_obs,
+        slope = slope_obs,
+        st_dev = pop_sd_k
+        )
+    p_vals[i] = summary(fit_sim)$coefficients[2, 'Pr(>|t|)']
+    }
+    
+    sim_output_3[k, j] = sum(p_vals < alpha) / n_sims
+  }
+  print(paste0("Testing standard deviation ", k, " of ", n_sds))
+}
+```
+
+``` {r}
+image(sim_output_3)
+
+sim_3_dat = 
+  list(
+    power       = sim_output_3,
+    sample_size = sample_sizes,
+    pop_sd      = pop_sds)
+
+
+# You should save your simulation results so you don't have to run it every time.
+save(
+  sim_3_dat, 
+  file = here::here("data", "lab_ll_sim_output_dispersion_n_10.RData"))
+```
+### 3. Include a figure of your contour plot in your report.
+
+``` {r}
+contour(
+  x = sim_3_dat$pop_sd,
+  y = sim_3_dat$sample_size,
+  z = sim_3_dat$power,
+  xlab = "standard deviation",
+  ylab = "sample size",
+  main = "Contour Plot of Statistical Power",
+  levels = seq(0, 1, length.out = 9),
+  drawlabels = TRUE,
+  method = "edge")
+
+```
+
+### 4. Qualitatively describe the patterns you see in the contour plot. Make sure you discuss the effects of sample size and population dispersion on statistical power.
+
+- The above contour plot shows that as the population standard deviation increases, the statistical power quickly diminishes. Raising the sample size has a positive effect on the statistical power, but it is much less influential than the standard deviation. The trend lines are not smooth, but the general trend shows that as sample size goes up, power also goes up (larger sample size leads to a narrower curve which, as discussed in question 2, reduces curve overlap and increases power). It also shows that as standard deviation increases, power sharply drops (larger sd leads to wider curves that overlap which, as I just said, decreases power).
+
+# 3D Perspective Plot
+
+```{r}
+# install.packages("rgl")
+require(rgl)
+
+# install.packages("htmlwidgets")
+require(htmlwidgets)
+```
+```{r}
+persp3d(
+  x = sim_3_dat$pop_sd,
+  y = sim_3_dat$sample_size,
+  z = sim_3_dat$power,
+  xlab = "Standard Deviation", ylab = "Sample Size", zlab = "power",
+  col = rgb(255, 209, 220, 100, maxColor = 255),
+  width = 5000, height = 1000,
+  theta = 30, phi = 30, expand = 1.25,
+  ticktype = 'detailed')
+
+saveWidget(
+  rglwidget(),
+  file = here(
+    "docs",
+    "3d_sample_size_sd.html"),
+  selfcontained = TRUE
+)
+```
+
+### 5. Upload your plot as an interactive html file that you created with writeWebGL().
+
+- File uploaded on Moodle
+
+### 6. Describe how you could use the information shown in your plot when designing an experiment.
+
+- The plot shows that variation has a much stronger influence on the statistical power than the sample size. While larger sample sizes also improve the statistical power, no matter how large the sample size gets it will not make up for a variance that is more than .5 - 1 sd. From this observation, it would make sense that when designing an experiment you should prioritize decreasing variance in the data set over increasing sample size. That said, obviously a larger sample size is better than smaller. But given the choice, decreasing variance should be the priority.
